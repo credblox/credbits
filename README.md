@@ -14,7 +14,7 @@ What is blox framework?
 - Blox Support (Slack channel - coming soon!)
 
 
-# Steps to start a hyperledger fabric network, install & run chaincode 
+# Steps to start a hyperledger fabric network, install & query chaincode 
 
 cd <your-repository-base-directory>
 mvn install
