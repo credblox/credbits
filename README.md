@@ -16,8 +16,9 @@ What is blox framework?
 
 # Steps to start a hyperledger fabric network, install & query chaincode 
 
-cd (your-repository-base-directory)
-mvn install
+- cd (your-repository-base-directory)
+- mvn install
+
 1. java -cp target/blox-network-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.credblox.application.StartNetwork
 2. java -cp target/blox-network-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.credblox.application.CreateChannel
 3. java -cp target/blox-network-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.credblox.application.InstantiateChaincode organic
