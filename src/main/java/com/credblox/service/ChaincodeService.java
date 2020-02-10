@@ -1,20 +1,19 @@
 package com.credblox.service;
 
-import java.io.File;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.credblox.adapter.client.CAClient;
-import com.credblox.adapter.client.HyperLedgerFabricClient;
-
 import com.credblox.adapter.client.ChannelClient;
+import com.credblox.adapter.client.HyperLedgerFabricClient;
 import com.credblox.constants.NetworkConstants;
 import com.credblox.domain.UserContext;
 import main.java.com.credblox.util.NetworkUtil;
 import org.hyperledger.fabric.sdk.*;
-import org.hyperledger.fabric.sdk.security.CryptoSuite;
 import org.hyperledger.fabric.sdk.TransactionRequest.Type;
+import org.hyperledger.fabric.sdk.security.CryptoSuite;
+
+import java.io.File;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -25,7 +24,7 @@ public class ChaincodeService {
 
     public static void instantiate(String chainCodeName) {
         try {
-            String CHAINCODE_1_PATH = "github.com/"+chainCodeName;
+            String CHAINCODE_1_PATH = "github.com/" + chainCodeName;
             CryptoSuite cryptoSuite = CryptoSuite.Factory.getCryptoSuite();
 
             UserContext org1Admin = new UserContext();
@@ -97,7 +96,7 @@ public class ChaincodeService {
 
             ChannelClient channelClient = new ChannelClient(mychannel.getName(), mychannel, fabClient);
 
-            String[] arguments = { "" };
+            String[] arguments = {""};
             response = channelClient.instantiateChainCode(chainCodeName, NetworkConstants.CHAINCODE_1_VERSION,
                     CHAINCODE_1_PATH, Type.JAVA.toString(), "init", arguments, null);
 
@@ -114,7 +113,7 @@ public class ChaincodeService {
     public static String query(String chainCodeName) {
         String response = "";
         try {
-            String CHAINCODE_1_PATH = "github.com/"+chainCodeName;
+            String CHAINCODE_1_PATH = "github.com/" + chainCodeName;
             NetworkUtil.cleanUp();
             String caUrl = NetworkConstants.CA_ORG1_URL;
             CAClient caClient = new CAClient(caUrl, null);
@@ -142,7 +141,7 @@ public class ChaincodeService {
             ChaincodeID ccid = ChaincodeID.newBuilder().setName(chainCodeName).build();
             request.setChaincodeID(ccid);
             request.setFcn("createAsset");
-            String[] arguments = { "Asset1", "Chevy", "Volt", "Red", "Nick" };
+            String[] arguments = {"Asset1", "Chevy", "Volt", "Red", "Nick"};
             request.setArgs(arguments);
             request.setProposalWaitTime(1000);
 
@@ -165,7 +164,7 @@ public class ChaincodeService {
 
             //Thread.sleep(10000);
             String[] args1 = {"Asset1"};
-            Collection<ProposalResponse>  responses1Query = channelClient.queryByChainCode(chainCodeName, "queryAsset", args1);
+            Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "queryAsset", args1);
             for (ProposalResponse pres : responses1Query) {
                 String stringResponse = new String(pres.getChaincodeActionResponsePayload());
                 response = response.concat(stringResponse);
