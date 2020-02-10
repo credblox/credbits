@@ -24,7 +24,7 @@ public class ChaincodeService {
 
     public static void instantiate(String chainCodeName) {
         try {
-            String CHAINCODE_1_PATH = "github.com/" + chainCodeName;
+            String CHAINCODE_1_PATH = chainCodeName;
             CryptoSuite cryptoSuite = CryptoSuite.Factory.getCryptoSuite();
 
             UserContext org1Admin = new UserContext();
@@ -140,8 +140,8 @@ public class ChaincodeService {
             TransactionProposalRequest request = fabClient.getInstance().newTransactionProposalRequest();
             ChaincodeID ccid = ChaincodeID.newBuilder().setName(chainCodeName).build();
             request.setChaincodeID(ccid);
-            request.setFcn("createAsset");
-            String[] arguments = {"Asset1", "Chevy", "Volt", "Red", "Nick"};
+            request.setFcn("invoke");
+            String[] arguments = {"CAR1", "15"};
             request.setArgs(arguments);
             request.setProposalWaitTime(1000);
 
@@ -163,8 +163,8 @@ public class ChaincodeService {
 			}*/
 
             //Thread.sleep(10000);
-            String[] args1 = {"Asset1"};
-            Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "queryAsset", args1);
+            String[] args1 = {"CAR1"};
+            Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "query", args1);
             for (ProposalResponse pres : responses1Query) {
                 String stringResponse = new String(pres.getChaincodeActionResponsePayload());
                 response = response.concat(stringResponse);

@@ -58,7 +58,7 @@ public class NetworkConstants {
 
     public static final String ORG2_PEER_1_URL = "grpc://localhost:8056";
 
-    public static final String CHAINCODE_ROOT_DIR = "resources/chaincode";
+    public static final String CHAINCODE_ROOT_DIR = "resources/chaincode/src";
 
     public static final String CHAINCODE_1_NAME = "asset";
 

@@ -148,8 +148,7 @@ public class ChannelClient {
         InstantiateProposalRequest instantiateProposalRequest = fabClient.getInstance()
                 .newInstantiationProposalRequest();
         instantiateProposalRequest.setProposalWaitTime(180000);
-        ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(chaincodeName).setVersion(version)
-                .setPath(chaincodePath);
+        ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(chaincodeName).setVersion(version);
         ChaincodeID ccid = chaincodeIDBuilder.build();
         Logger.getLogger(ChannelClient.class.getName()).log(Level.INFO,
                 "Instantiating Chaincode ID " + chaincodeName + " on channel " + channel.getName());

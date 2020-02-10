@@ -95,8 +95,7 @@ public class HyperLedgerFabricClient {
                                                         String language, String version, Collection<Peer> peers)
             throws InvalidArgumentException, IOException, ProposalException {
         InstallProposalRequest request = instance.newInstallProposalRequest();
-        ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(chainCodeName).setVersion(version)
-                .setPath(chaincodePath);
+        ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(chainCodeName).setVersion(version);
         ChaincodeID chaincodeID = chaincodeIDBuilder.build();
         Logger.getLogger(HyperLedgerFabricClient.class.getName()).log(Level.INFO,
                 "Deploying chaincode " + chainCodeName + " using Fabric client " + instance.getUserContext().getMspId()
@@ -105,6 +104,10 @@ public class HyperLedgerFabricClient {
         request.setUserContext(instance.getUserContext());
         request.setChaincodeSourceLocation(new File(codepath));
         request.setChaincodeVersion(version);
+        if (language.equals(TransactionRequest.Type.GO_LANG.toString()))
+            request.setChaincodeLanguage(TransactionRequest.Type.GO_LANG);
+        else
+            request.setChaincodeLanguage(TransactionRequest.Type.JAVA);
         Collection<ProposalResponse> responses = instance.sendInstallProposal(request, peers);
         return responses;
     }
