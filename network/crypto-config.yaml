@@ -14,9 +14,9 @@ OrdererOrgs:
     Domain: example.com
     # EnableNodeOUs: true
     CA:
-        Country: US
-        Province: California
-        Locality: San Francisco
+      Country: US
+      Province: California
+      Locality: San Francisco
     # ---------------------------------------------------------------------------
     # "Specs" - See PeerOrgs below for complete description
     # ---------------------------------------------------------------------------
@@ -33,9 +33,9 @@ PeerOrgs:
     Domain: org1.example.com
     EnableNodeOUs: true
     CA:
-        Country: US
-        Province: California
-        Locality: San Francisco
+      Country: US
+      Province: California
+      Locality: San Francisco
     # ---------------------------------------------------------------------------
     # "CA"
     # ---------------------------------------------------------------------------
@@ -95,9 +95,9 @@ PeerOrgs:
     Domain: org2.example.com
     EnableNodeOUs: true
     CA:
-        Country: US
-        Province: California
-        Locality: San Francisco
+      Country: US
+      Province: California
+      Locality: San Francisco
     # CA:
     #    Hostname: ca # implicitly ca.org2.example.com
     Template:

@@ -14,20 +14,16 @@
  */
 package com.credblox.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.credblox.adapter.client.HyperLedgerFabricClient;
+import com.credblox.constants.NetworkConstants;
+import com.credblox.domain.CAEnrollment;
+import com.credblox.domain.UserContext;
+import org.hyperledger.fabric.sdk.*;
+import org.hyperledger.fabric.sdk.exception.CryptoException;
+import org.hyperledger.fabric.sdk.security.CryptoSuite;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -35,20 +31,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-
-import javax.xml.bind.DatatypeConverter;
-
-import com.credblox.adapter.client.HyperLedgerFabricClient;
-import com.credblox.constants.NetworkConstants;
-import com.credblox.domain.UserContext;
-import com.credblox.domain.CAEnrollment;
-import org.hyperledger.fabric.sdk.Channel;
-import org.hyperledger.fabric.sdk.ChannelConfiguration;
-import org.hyperledger.fabric.sdk.Enrollment;
-import org.hyperledger.fabric.sdk.Orderer;
-import org.hyperledger.fabric.sdk.Peer;
-import org.hyperledger.fabric.sdk.security.CryptoSuite;
-import org.hyperledger.fabric.sdk.exception.CryptoException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ChannelService {
 
@@ -112,13 +98,12 @@ public class ChannelService {
             mychannel.joinPeer(peer0_org2);
             mychannel.joinPeer(peer1_org2);
 
-            Logger.getLogger(ChannelService.class.getName()).log(Level.INFO, "Channel created "+mychannel.getName());
+            Logger.getLogger(ChannelService.class.getName()).log(Level.INFO, "Channel created " + mychannel.getName());
             Collection peers = mychannel.getPeers();
             Iterator peerIter = peers.iterator();
-            while (peerIter.hasNext())
-            {
+            while (peerIter.hasNext()) {
                 Peer pr = (Peer) peerIter.next();
-                Logger.getLogger(ChannelService.class.getName()).log(Level.INFO,pr.getName()+ " at " + pr.getUrl());
+                Logger.getLogger(ChannelService.class.getName()).log(Level.INFO, pr.getName() + " at " + pr.getUrl());
             }
 
         } catch (Exception e) {
@@ -138,7 +123,7 @@ public class ChannelService {
      * @throws InvalidKeySpecException
      * @throws CryptoException
      */
-    public static CAEnrollment getEnrollment(String keyFolderPath,  String keyFileName,  String certFolderPath, String certFileName)
+    public static CAEnrollment getEnrollment(String keyFolderPath, String keyFileName, String certFolderPath, String certFileName)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, CryptoException {
         PrivateKey key = null;
         String certificate = null;

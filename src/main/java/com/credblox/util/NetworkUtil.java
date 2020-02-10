@@ -1,7 +1,7 @@
 package main.java.com.credblox.util;
 
-import com.credblox.domain.UserContext;
 import com.credblox.domain.CAEnrollment;
+import com.credblox.domain.UserContext;
 import org.hyperledger.fabric.sdk.exception.CryptoException;
 
 import javax.xml.bind.DatatypeConverter;
@@ -79,7 +79,7 @@ public class NetworkUtil {
      * @throws InvalidKeySpecException
      * @throws CryptoException
      */
-    public static CAEnrollment getEnrollment(String keyFolderPath,  String keyFileName,  String certFolderPath, String certFileName)
+    public static CAEnrollment getEnrollment(String keyFolderPath, String keyFileName, String certFolderPath, String certFileName)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, CryptoException {
         PrivateKey key = null;
         String certificate = null;

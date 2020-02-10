@@ -12,35 +12,7 @@
  */
 package com.credblox.adapter.client;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-
-import javax.xml.bind.DatatypeConverter;
-
 import com.credblox.domain.CAEnrollment;
-import com.credblox.domain.UserContext;
-import org.hyperledger.fabric.sdk.exception.CryptoException;
-
 import com.credblox.domain.UserContext;
 import org.hyperledger.fabric.sdk.Enrollment;
 import org.hyperledger.fabric.sdk.exception.CryptoException;
@@ -49,243 +21,257 @@ import org.hyperledger.fabric.sdk.security.CryptoSuite;
 import org.hyperledger.fabric_ca.sdk.HFCAClient;
 import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
 
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Wrapper class for HFCAClient.
- * 
- * @author Balaji Kadambi
  *
+ * @author Balaji Kadambi
  */
 
 public class CAClient {
 
-	String caUrl;
-	Properties caProperties;
+    String caUrl;
+    Properties caProperties;
 
-	HFCAClient instance;
+    HFCAClient instance;
 
-	UserContext adminContext;
+    UserContext adminContext;
 
-	public UserContext getAdminUserContext() {
-		return adminContext;
-	}
+    /**
+     * Constructor
+     *
+     * @param caUrl
+     * @param caProperties
+     * @throws MalformedURLException
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     * @throws InvalidArgumentException
+     * @throws CryptoException
+     * @throws ClassNotFoundException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
+    public CAClient(String caUrl, Properties caProperties) throws MalformedURLException, IllegalAccessException, InstantiationException, ClassNotFoundException, CryptoException, InvalidArgumentException, NoSuchMethodException, InvocationTargetException {
+        this.caUrl = caUrl;
+        this.caProperties = caProperties;
+        init();
+    }
 
-	/**
-	 * Set the admin user context for registering and enrolling users.
-	 * 
-	 * @param userContext
-	 */
-	public void setAdminUserContext(UserContext userContext) {
-		this.adminContext = userContext;
-	}
+    /**
+     * Serialize user
+     *
+     * @param userContext
+     * @throws Exception
+     */
+    public static void writeUserContext(UserContext userContext) throws Exception {
+        String directoryPath = "users/" + userContext.getAffiliation();
+        String filePath = directoryPath + "/" + userContext.getName() + ".ser";
+        File directory = new File(directoryPath);
+        if (!directory.exists())
+            directory.mkdirs();
 
-	/**
-	 * Constructor
-	 * 
-	 * @param caUrl 
-	 * @param caProperties
-	 * @throws MalformedURLException
-	 * @throws InvocationTargetException 
-	 * @throws NoSuchMethodException 
-	 * @throws InvalidArgumentException 
-	 * @throws CryptoException 
-	 * @throws ClassNotFoundException 
-	 * @throws InstantiationException 
-	 * @throws IllegalAccessException 
-	 */
-	public CAClient(String caUrl, Properties caProperties) throws MalformedURLException, IllegalAccessException, InstantiationException, ClassNotFoundException, CryptoException, InvalidArgumentException, NoSuchMethodException, InvocationTargetException {
-		this.caUrl = caUrl;
-		this.caProperties = caProperties;
-		init();
-	}
+        FileOutputStream file = new FileOutputStream(filePath);
+        ObjectOutputStream out = new ObjectOutputStream(file);
 
-	public void init() throws MalformedURLException, IllegalAccessException, InstantiationException, ClassNotFoundException, CryptoException, InvalidArgumentException, NoSuchMethodException, InvocationTargetException {
-		CryptoSuite cryptoSuite = CryptoSuite.Factory.getCryptoSuite();
-		instance = HFCAClient.createNewInstance(caUrl, caProperties);
-		instance.setCryptoSuite(cryptoSuite);
-	}
+        // Method for serialization of object
+        out.writeObject(userContext);
 
-	public HFCAClient getInstance() {
-		return instance;
-	}
+        out.close();
+        file.close();
+    }
 
-	/**
-	 * Enroll admin user.
-	 * 
-	 * @param username
-	 * @param password
-	 * @return
-	 * @throws Exception
-	 */
-	public UserContext enrollAdminUser(String username, String password) throws Exception {
-		UserContext userContext = readUserContext(adminContext.getAffiliation(), username);
-		if (userContext != null) {
-			Logger.getLogger(CAClient.class.getName()).log(Level.WARNING, "CA -" + caUrl + " admin is already enrolled.");
-			return userContext;
-		}
-		Enrollment adminEnrollment = instance.enroll(username, password);
-		adminContext.setEnrollment(adminEnrollment);
-		Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "CA -" + caUrl + " Enrolled Admin.");
-		writeUserContext(adminContext);
-		return adminContext;
-	}
+    /**
+     * Deserialize user
+     *
+     * @param affiliation
+     * @param username
+     * @return
+     * @throws Exception
+     */
+    public static UserContext readUserContext(String affiliation, String username) throws Exception {
+        String filePath = "users/" + affiliation + "/" + username + ".ser";
+        File file = new File(filePath);
+        if (file.exists()) {
+            // Reading the object from a file
+            FileInputStream fileStream = new FileInputStream(filePath);
+            ObjectInputStream in = new ObjectInputStream(fileStream);
 
-	/**
-	 * Register user.
-	 * 
-	 * @param username
-	 * @param organization
-	 * @return
-	 * @throws Exception
-	 */
-	public String registerUser(String username, String organization) throws Exception {
-		UserContext userContext = readUserContext(adminContext.getAffiliation(), username);
-		if (userContext != null) {
-			Logger.getLogger(CAClient.class.getName()).log(Level.WARNING, "CA -" + caUrl +" User " + username+ " is already registered.");
-			return null;
-		}
-		RegistrationRequest rr = new RegistrationRequest(username, organization);
-		String enrollmentSecret = instance.register(rr, adminContext);
-		Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "CA -" + caUrl + " Registered User - " + username);
-		return enrollmentSecret;
-	}
+            // Method for deserialization of object
+            UserContext uContext = (UserContext) in.readObject();
 
-	/**
-	 * Enroll user.
-	 * 
-	 * @param user
-	 * @param secret
-	 * @return
-	 * @throws Exception
-	 */
-	public UserContext enrollUser(UserContext user, String secret) throws Exception {
-		UserContext userContext = readUserContext(adminContext.getAffiliation(), user.getName());
-		if (userContext != null) {
-			Logger.getLogger(CAClient.class.getName()).log(Level.WARNING, "CA -" + caUrl + " User " + user.getName()+" is already enrolled");
-			return userContext;
-		}
-		Enrollment enrollment = instance.enroll(user.getName(), secret);
-		user.setEnrollment(enrollment);
-		writeUserContext(user);
-		Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "CA -" + caUrl +" Enrolled User - " + user.getName());
-		return user;
-	}
+            in.close();
+            fileStream.close();
+            return uContext;
+        }
 
-	/**
-	 * Serialize user
-	 *
-	 * @param userContext
-	 * @throws Exception
-	 */
-	public static void writeUserContext(UserContext userContext) throws Exception {
-		String directoryPath = "users/" + userContext.getAffiliation();
-		String filePath = directoryPath + "/" + userContext.getName() + ".ser";
-		File directory = new File(directoryPath);
-		if (!directory.exists())
-			directory.mkdirs();
+        return null;
+    }
 
-		FileOutputStream file = new FileOutputStream(filePath);
-		ObjectOutputStream out = new ObjectOutputStream(file);
+    /**
+     * Create enrollment from key and certificate files.
+     *
+     * @param folderPath
+     * @param keyFileName
+     * @param certFileName
+     * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     * @throws CryptoException
+     */
+    public static CAEnrollment getEnrollment(String keyFolderPath, String keyFileName, String certFolderPath, String certFileName)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, CryptoException {
+        PrivateKey key = null;
+        String certificate = null;
+        InputStream isKey = null;
+        BufferedReader brKey = null;
 
-		// Method for serialization of object
-		out.writeObject(userContext);
+        try {
 
-		out.close();
-		file.close();
-	}
+            isKey = new FileInputStream(keyFolderPath + File.separator + keyFileName);
+            brKey = new BufferedReader(new InputStreamReader(isKey));
+            StringBuilder keyBuilder = new StringBuilder();
 
-	/**
-	 * Deserialize user
-	 *
-	 * @param affiliation
-	 * @param username
-	 * @return
-	 * @throws Exception
-	 */
-	public static UserContext readUserContext(String affiliation, String username) throws Exception {
-		String filePath = "users/" + affiliation + "/" + username + ".ser";
-		File file = new File(filePath);
-		if (file.exists()) {
-			// Reading the object from a file
-			FileInputStream fileStream = new FileInputStream(filePath);
-			ObjectInputStream in = new ObjectInputStream(fileStream);
+            for (String line = brKey.readLine(); line != null; line = brKey.readLine()) {
+                if (line.indexOf("PRIVATE") == -1) {
+                    keyBuilder.append(line);
+                }
+            }
 
-			// Method for deserialization of object
-			UserContext uContext = (UserContext) in.readObject();
+            certificate = new String(Files.readAllBytes(Paths.get(certFolderPath, certFileName)));
 
-			in.close();
-			fileStream.close();
-			return uContext;
-		}
+            byte[] encoded = DatatypeConverter.parseBase64Binary(keyBuilder.toString());
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+            KeyFactory kf = KeyFactory.getInstance("EC");
+            key = kf.generatePrivate(keySpec);
+        } finally {
+            isKey.close();
+            brKey.close();
+        }
 
-		return null;
-	}
+        CAEnrollment enrollment = new CAEnrollment(key, certificate);
+        return enrollment;
+    }
 
-	/**
-	 * Create enrollment from key and certificate files.
-	 *
-	 * @param folderPath
-	 * @param keyFileName
-	 * @param certFileName
-	 * @return
-	 * @throws IOException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeySpecException
-	 * @throws CryptoException
-	 */
-	public static CAEnrollment getEnrollment(String keyFolderPath,  String keyFileName,  String certFolderPath, String certFileName)
-			throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, CryptoException {
-		PrivateKey key = null;
-		String certificate = null;
-		InputStream isKey = null;
-		BufferedReader brKey = null;
+    public static void cleanUp() {
+        String directoryPath = "users";
+        File directory = new File(directoryPath);
+        deleteDirectory(directory);
+    }
 
-		try {
+    public static boolean deleteDirectory(File dir) {
+        if (dir.isDirectory()) {
+            File[] children = dir.listFiles();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDirectory(children[i]);
+                if (!success) {
+                    return false;
+                }
+            }
+        }
 
-			isKey = new FileInputStream(keyFolderPath + File.separator + keyFileName);
-			brKey = new BufferedReader(new InputStreamReader(isKey));
-			StringBuilder keyBuilder = new StringBuilder();
+        // either file or an empty directory
+        Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "Deleting - " + dir.getName());
+        return dir.delete();
+    }
 
-			for (String line = brKey.readLine(); line != null; line = brKey.readLine()) {
-				if (line.indexOf("PRIVATE") == -1) {
-					keyBuilder.append(line);
-				}
-			}
+    public UserContext getAdminUserContext() {
+        return adminContext;
+    }
 
-			certificate = new String(Files.readAllBytes(Paths.get(certFolderPath, certFileName)));
+    /**
+     * Set the admin user context for registering and enrolling users.
+     *
+     * @param userContext
+     */
+    public void setAdminUserContext(UserContext userContext) {
+        this.adminContext = userContext;
+    }
 
-			byte[] encoded = DatatypeConverter.parseBase64Binary(keyBuilder.toString());
-			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-			KeyFactory kf = KeyFactory.getInstance("EC");
-			key = kf.generatePrivate(keySpec);
-		} finally {
-			isKey.close();
-			brKey.close();
-		}
+    public void init() throws MalformedURLException, IllegalAccessException, InstantiationException, ClassNotFoundException, CryptoException, InvalidArgumentException, NoSuchMethodException, InvocationTargetException {
+        CryptoSuite cryptoSuite = CryptoSuite.Factory.getCryptoSuite();
+        instance = HFCAClient.createNewInstance(caUrl, caProperties);
+        instance.setCryptoSuite(cryptoSuite);
+    }
 
-		CAEnrollment enrollment = new CAEnrollment(key, certificate);
-		return enrollment;
-	}
+    public HFCAClient getInstance() {
+        return instance;
+    }
 
-	public static void cleanUp() {
-		String directoryPath = "users";
-		File directory = new File(directoryPath);
-		deleteDirectory(directory);
-	}
+    /**
+     * Enroll admin user.
+     *
+     * @param username
+     * @param password
+     * @return
+     * @throws Exception
+     */
+    public UserContext enrollAdminUser(String username, String password) throws Exception {
+        UserContext userContext = readUserContext(adminContext.getAffiliation(), username);
+        if (userContext != null) {
+            Logger.getLogger(CAClient.class.getName()).log(Level.WARNING, "CA -" + caUrl + " admin is already enrolled.");
+            return userContext;
+        }
+        Enrollment adminEnrollment = instance.enroll(username, password);
+        adminContext.setEnrollment(adminEnrollment);
+        Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "CA -" + caUrl + " Enrolled Admin.");
+        writeUserContext(adminContext);
+        return adminContext;
+    }
 
-	public static boolean deleteDirectory(File dir) {
-		if (dir.isDirectory()) {
-			File[] children = dir.listFiles();
-			for (int i = 0; i < children.length; i++) {
-				boolean success = deleteDirectory(children[i]);
-				if (!success) {
-					return false;
-				}
-			}
-		}
+    /**
+     * Register user.
+     *
+     * @param username
+     * @param organization
+     * @return
+     * @throws Exception
+     */
+    public String registerUser(String username, String organization) throws Exception {
+        UserContext userContext = readUserContext(adminContext.getAffiliation(), username);
+        if (userContext != null) {
+            Logger.getLogger(CAClient.class.getName()).log(Level.WARNING, "CA -" + caUrl + " User " + username + " is already registered.");
+            return null;
+        }
+        RegistrationRequest rr = new RegistrationRequest(username, organization);
+        String enrollmentSecret = instance.register(rr, adminContext);
+        Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "CA -" + caUrl + " Registered User - " + username);
+        return enrollmentSecret;
+    }
 
-		// either file or an empty directory
-		Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "Deleting - " + dir.getName());
-		return dir.delete();
-	}
+    /**
+     * Enroll user.
+     *
+     * @param user
+     * @param secret
+     * @return
+     * @throws Exception
+     */
+    public UserContext enrollUser(UserContext user, String secret) throws Exception {
+        UserContext userContext = readUserContext(adminContext.getAffiliation(), user.getName());
+        if (userContext != null) {
+            Logger.getLogger(CAClient.class.getName()).log(Level.WARNING, "CA -" + caUrl + " User " + user.getName() + " is already enrolled");
+            return userContext;
+        }
+        Enrollment enrollment = instance.enroll(user.getName(), secret);
+        user.setEnrollment(enrollment);
+        writeUserContext(user);
+        Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "CA -" + caUrl + " Enrolled User - " + user.getName());
+        return user;
+    }
 
 }

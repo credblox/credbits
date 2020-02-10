@@ -1,4 +1,3 @@
-
 version: '2'
 
 networks:
@@ -55,10 +54,10 @@ services:
     ports:
       - 7050:7050
     volumes:
-        - ../resources/config/:/etc/hyperledger/configtx
-        - ../resources/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
-        - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
-        - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/msp/peerOrg2
+      - ../resources/config/:/etc/hyperledger/configtx
+      - ../resources/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
+      - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/msp/peerOrg2
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
@@ -83,10 +82,10 @@ services:
     networks:
       - custom
     volumes:
-        - /var/run/:/host/var/run/
-        - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
-        - ../resources/crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
-        - ../resources/config:/etc/hyperledger/configtx
+      - /var/run/:/host/var/run/
+      - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../resources/crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
+      - ../resources/config:/etc/hyperledger/configtx
     depends_on:
       - orderer.example.com
 
@@ -110,10 +109,10 @@ services:
       - 7056:7051
       - 7058:7053
     volumes:
-        - /var/run/:/host/var/run/
-        - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp:/etc/hyperledger/fabric/msp
-        - ../resources/crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
-        - ../resources/config:/etc/hyperledger/configtx
+      - /var/run/:/host/var/run/
+      - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../resources/crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
+      - ../resources/config:/etc/hyperledger/configtx
     depends_on:
       - orderer.example.com
 
@@ -137,10 +136,10 @@ services:
       - 8051:7051
       - 8053:7053
     volumes:
-        - /var/run/:/host/var/run/
-        - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
-        - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
-        - ../resources/config:/etc/hyperledger/configtx
+      - /var/run/:/host/var/run/
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
+      - ../resources/config:/etc/hyperledger/configtx
     depends_on:
       - orderer.example.com
 
@@ -164,9 +163,9 @@ services:
       - 8056:7051
       - 8058:7053
     volumes:
-        - /var/run/:/host/var/run/
-        - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp:/etc/hyperledger/fabric/msp
-        - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
-        - ../resources/config:/etc/hyperledger/configtx
+      - /var/run/:/host/var/run/
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
+      - ../resources/config:/etc/hyperledger/configtx
     depends_on:
       - orderer.example.com
