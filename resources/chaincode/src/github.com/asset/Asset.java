@@ -1,124 +1,142 @@
 package github.com.asset;
 
-import com.google.gson.JsonObject;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
 import org.hyperledger.fabric.shim.ChaincodeBase;
 import org.hyperledger.fabric.shim.ChaincodeStub;
-import org.hyperledger.fabric.shim.ledger.KeyModification;
-import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.IntStream;
+import org.hyperledger.fabric.shim.ledger.KeyValue;
 
 public class Asset extends ChaincodeBase {
 
-
-    private static Log LOG = LogFactory.getLog(Asset.class);
-
-    public static final String INVOKE_FUNCTION = "invoke";
-    public static final String QUERY_FUNCTION = "query";
-    public static final String QUERY_HISTORY_FUNCTION = "queryHistory";
-
+    /**
+     * Init is called when initializing or updating chaincode. Use this to set
+     * initial world state
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @return Response with message and payload
+     */
     @Override
-    public Response init(ChaincodeStub chaincodeStub) {
+    public Response init(ChaincodeStub stub) {
+        String fcn = stub.getFunction();
+        List<String> params = stub.getParameters();
+        //Adding one fish object to the ledger on init
+        stub.putStringState("b0d9b2ec-562c-4917-9cd3-330248e73ace", "{\"docType\":\"fish\",\"id\":\"b0d9b2ec-562c-4917-9cd3-330248e73ace\",\"price\":4,\"type\":\"Salmon\",\"weight\":2}");
         return newSuccessResponse();
     }
 
+    /**
+     * Invoke is called to read from or write to the ledger
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @return Response
+     */
     @Override
-    public Response invoke(ChaincodeStub chaincodeStub) {
-
-        String functionName = chaincodeStub.getFunction();
-        LOG.info("function name: " + functionName);
-
-
-        List<String> paramList = chaincodeStub.getParameters();
-        IntStream.range(0, paramList.size()).forEach(idx -> LOG.info("value of param: " + idx + " is: " + paramList.get(idx)));
-
-        if (INVOKE_FUNCTION.equalsIgnoreCase(functionName)) {
-            return performInvokeOperation(chaincodeStub, paramList);
-        } else if (QUERY_FUNCTION.equalsIgnoreCase(functionName)) {
-            return performQueryOperation(chaincodeStub, paramList);
-        } else if (QUERY_HISTORY_FUNCTION.equalsIgnoreCase(functionName)) {
-            return performQueryByHistoryFunction(chaincodeStub, paramList);
-        } else return newErrorResponse(functionName + " function is currently not supported");
-    }
-
-    private Response performQueryByHistoryFunction(ChaincodeStub chaincodeStub, List<String> paramList) {
-        if (listHasDifferentSizeThen(paramList, 1)) {
-            return newErrorResponse("incorrect number of arguments");
-        }
-        QueryResultsIterator<KeyModification> queryResultsIterator = chaincodeStub.getHistoryForKey(paramList.get(0));
-        return newSuccessResponse(buildJsonFromQueryResult(queryResultsIterator));
-
-    }
-
-    private String buildJsonFromQueryResult(QueryResultsIterator<KeyModification> queryResultsIterator) {
-
-        JSONArray jsonArray = new JSONArray();
-        queryResultsIterator.forEach(keyModification -> {
-            Map<String, Object> map = new LinkedHashMap<>();
-            map.put("transactionId", keyModification.getTxId());
-            map.put("timestamp", keyModification.getTimestamp().toString());
-            map.put("value", keyModification.getStringValue());
-            map.put("isDeleted", keyModification.isDeleted());
-            jsonArray.put(map);
-        });
-
-        JSONObject jsonObject = new JSONObject();
+    public Response invoke(ChaincodeStub stub) {
         try {
-            jsonObject.accumulate("transactions", jsonArray);
-        } catch (JSONException e) {
-            throw new RuntimeException("exception while generating json object");
-        }
-        return jsonObject.toString();
-    }
-
-    private Response performQueryOperation(ChaincodeStub chaincodeStub, List<String> paramList) {
-        if (listHasDifferentSizeThen(paramList, 1)) {
-            return newErrorResponse("incorrect number of arguments");
-        }
-        String carMileage = chaincodeStub.getStringState(paramList.get(0));
-        if (Objects.isNull(carMileage)) {
-            return newErrorResponse("mileage of provided car not found");
-        }
-        return newSuccessResponse(carMileage);
-    }
-
-    private Response performInvokeOperation(ChaincodeStub chaincodeStub, List<String> paramList) {
-        if (listHasDifferentSizeThen(paramList, 2)) {
-            return newErrorResponse("incorrect number of arguments");
-        }
-        String carId = paramList.get(0);
-        String carMileageToUpdate = paramList.get(1);
-
-        if (!StringUtils.isNumeric(carMileageToUpdate)) {
-            return newErrorResponse("provided car mileage is not numeric value !");
-        }
-
-        String carMileageFromLedger = chaincodeStub.getStringState(carId);
-
-        if (StringUtils.isEmpty(carMileageFromLedger)) {
-            chaincodeStub.putStringState(carId, carMileageToUpdate);
-        } else {
-            if (Integer.valueOf(carMileageFromLedger).compareTo(Integer.valueOf(carMileageToUpdate)) >= 0) {
-                return newErrorResponse("incorrect value");
+            // Extract the function and args from the transaction proposal
+            String func = stub.getFunction();
+            List<String> params = stub.getParameters();
+            switch (func) {
+                case "set":
+                    // Return result as success payload
+                    return set(stub, params);
+                case "get":
+                    // Return result as success payload
+                    return get(stub, params);
+                case "delete":
+                    // Return result as success payload
+                    return delete(stub, params);
+                case "query":
+                    // Return result as success payload
+                    return query(stub, params);
+                default:
+                    break;
             }
-            chaincodeStub.putStringState(carId, carMileageToUpdate);
+            //Error if unknown method
+            return ChaincodeBase.newErrorResponse("Invalid invoke function name. Expecting one of: [\"set\", \"get\", \"delete\", \"query\"");
+        } catch (Throwable e) {
+            return ChaincodeBase.newErrorResponse(e.getMessage());
         }
-        return newSuccessResponse();
     }
 
-    private boolean listHasDifferentSizeThen(List<String> list, int expectedElementsNumber) {
-        return list.size() != expectedElementsNumber;
+    /**
+     * get receives the value of a key from the ledger
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @param args key
+     * @return Response with message and payload
+     */
+    private Response get(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 1) {
+            return newErrorResponse("Incorrect arguments. Expecting a key");
+        }
 
+        String value = stub.getStringState(args.get(0));
+        if (value == null || value.isEmpty()) {
+            return newErrorResponse("Asset not found with key: " + args.get(0));
+        }
+        Response response = newSuccessResponse("Returned value for key : " + args.get(0) + " = " + value, value.getBytes(StandardCharsets.UTF_8));
+        return response;
+    }
+
+    /**
+     * Rich query using json to read from world state
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @param args json query
+     * @return Response with message and payload
+     */
+    private Response query(ChaincodeStub stub, List<String> args) {
+        String payload = "";
+
+        //key value pair result iterator
+        Iterator<KeyValue> iterator = stub.getQueryResult(args.get(0)).iterator();
+        if (!iterator.hasNext()) {
+            return newSuccessResponse("No results", "[]".getBytes(StandardCharsets.UTF_8));
+        }
+        while (iterator.hasNext()) {
+            payload += iterator.next().getStringValue() + ",";
+        }
+        payload = payload.substring(0, payload.length() - 1);
+        payload = "[" + payload + "]";
+
+        Response response = newSuccessResponse("Query succesful", payload.getBytes(StandardCharsets.UTF_8));
+
+        return response;
+    }
+
+    /**
+     * set stores the asset (both key and value) on the ledger. If the key
+     * exists, it will override the value with the new one
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @param args key and value
+     * @return value
+     */
+    private Response set(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 2) {
+            return newErrorResponse("Incorrect arguments. Expecting a key and a value");
+        }
+        stub.putStringState(args.get(0), args.get(1));
+        return newSuccessResponse("Succesfully set key : " + args.get(0) + " as value : " + args.get(1), args.get(1).getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Delete the key from the state in ledger
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @param args key
+     * @return Response with message and payload
+     */
+    private Response delete(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 1) {
+            return newErrorResponse("Incorrect number of arguments. Expecting a key");
+        }
+        String key = args.get(0);
+        // Delete the key from the state in ledger
+        stub.delState(key);
+        return newSuccessResponse("Succesfully deleted key : " + args.get(0) + "from the ledger", args.get(0).getBytes(StandardCharsets.UTF_8));
     }
 
     public static void main(String[] args) {

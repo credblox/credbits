@@ -113,7 +113,7 @@ public class ChaincodeService {
     public static String query(String chainCodeName) {
         String response = "";
         try {
-            String CHAINCODE_1_PATH = "github.com/" + chainCodeName;
+            String CHAINCODE_1_PATH = chainCodeName;
             NetworkUtil.cleanUp();
             String caUrl = NetworkConstants.CA_ORG1_URL;
             CAClient caClient = new CAClient(caUrl, null);
@@ -140,8 +140,8 @@ public class ChaincodeService {
             TransactionProposalRequest request = fabClient.getInstance().newTransactionProposalRequest();
             ChaincodeID ccid = ChaincodeID.newBuilder().setName(chainCodeName).build();
             request.setChaincodeID(ccid);
-            request.setFcn("invoke");
-            String[] arguments = {"CAR1", "15"};
+            request.setFcn("set");
+            String[] arguments = {"CAR2", "115"};
             request.setArgs(arguments);
             request.setProposalWaitTime(1000);
 
@@ -164,7 +164,7 @@ public class ChaincodeService {
 
             //Thread.sleep(10000);
             String[] args1 = {"CAR1"};
-            Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "query", args1);
+            Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "get", args1);
             for (ProposalResponse pres : responses1Query) {
                 String stringResponse = new String(pres.getChaincodeActionResponsePayload());
                 response = response.concat(stringResponse);
