@@ -12,101 +12,99 @@
  */
 package com.credblox.service;
 
-import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.credblox.adapter.client.CAClient;
 import com.credblox.constants.NetworkConstants;
 import com.credblox.domain.UserContext;
 import main.java.com.credblox.util.NetworkUtil;
 
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * 
  * @author Balaji Kadambi
- *
  */
 
 public class UserService {
 
-	public static void main(String args[]) {
-		try {
-			cleanUp();
-			String caUrl = NetworkConstants.CA_ORG1_URL;
-			CAClient caClient = new CAClient(caUrl, null);
-			// Enroll Admin to Org1MSP
-			UserContext adminUserContext = new UserContext();
-			adminUserContext.setName(NetworkConstants.ADMIN);
-			adminUserContext.setAffiliation(NetworkConstants.ORG1);
-			adminUserContext.setMspId(NetworkConstants.ORG1_MSP);
-			caClient.setAdminUserContext(adminUserContext);
-			adminUserContext = caClient.enrollAdminUser(NetworkConstants.ADMIN, NetworkConstants.ADMIN_PASSWORD);
+    public static void main(String args[]) {
+        try {
+            cleanUp();
+            String caUrl = NetworkConstants.CA_ORG1_URL;
+            CAClient caClient = new CAClient(caUrl, null);
+            // Enroll Admin to Org1MSP
+            UserContext adminUserContext = new UserContext();
+            adminUserContext.setName(NetworkConstants.ADMIN);
+            adminUserContext.setAffiliation(NetworkConstants.ORG1);
+            adminUserContext.setMspId(NetworkConstants.ORG1_MSP);
+            caClient.setAdminUserContext(adminUserContext);
+            adminUserContext = caClient.enrollAdminUser(NetworkConstants.ADMIN, NetworkConstants.ADMIN_PASSWORD);
 
-			// Register and Enroll user to Org1MSP
-			UserContext userContext = new UserContext();
-			String name = "user"+System.currentTimeMillis();
-			userContext.setName(name);
-			userContext.setAffiliation(NetworkConstants.ORG1);
-			userContext.setMspId(NetworkConstants.ORG1_MSP);
+            // Register and Enroll user to Org1MSP
+            UserContext userContext = new UserContext();
+            String name = "user" + System.currentTimeMillis();
+            userContext.setName(name);
+            userContext.setAffiliation(NetworkConstants.ORG1);
+            userContext.setMspId(NetworkConstants.ORG1_MSP);
 
-			String eSecret = caClient.registerUser(name, NetworkConstants.ORG1);
+            String eSecret = caClient.registerUser(name, NetworkConstants.ORG1);
 
-			userContext = caClient.enrollUser(userContext, eSecret);
+            userContext = caClient.enrollUser(userContext, eSecret);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	public static void cleanUp() {
-		String directoryPath = "users";
-		File directory = new File(directoryPath);
-		deleteDirectory(directory);
-	}
+    public static void cleanUp() {
+        String directoryPath = "users";
+        File directory = new File(directoryPath);
+        deleteDirectory(directory);
+    }
 
-	public static boolean deleteDirectory(File dir) {
-		if (dir.isDirectory()) {
-			File[] children = dir.listFiles();
-			for (int i = 0; i < children.length; i++) {
-				boolean success = deleteDirectory(children[i]);
-				if (!success) {
-					return false;
-				}
-			}
-		}
+    public static boolean deleteDirectory(File dir) {
+        if (dir.isDirectory()) {
+            File[] children = dir.listFiles();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDirectory(children[i]);
+                if (!success) {
+                    return false;
+                }
+            }
+        }
 
-		// either file or an empty directory
-		Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "Deleting - " + dir.getName());
-		return dir.delete();
-	}
-	
-	public static void registerEnrollUser() {
-		try {
-			NetworkUtil.cleanUp();
-			String caUrl = NetworkConstants.CA_ORG1_URL;
-			CAClient caClient = new CAClient(caUrl, null);
-			// Enroll Admin to Org1MSP
-			UserContext adminUserContext = new UserContext();
-			adminUserContext.setName(NetworkConstants.ADMIN);
-			adminUserContext.setAffiliation(NetworkConstants.ORG1);
-			adminUserContext.setMspId(NetworkConstants.ORG1_MSP);
-			caClient.setAdminUserContext(adminUserContext);
-			adminUserContext = caClient.enrollAdminUser(NetworkConstants.ADMIN, NetworkConstants.ADMIN_PASSWORD);
+        // either file or an empty directory
+        Logger.getLogger(CAClient.class.getName()).log(Level.INFO, "Deleting - " + dir.getName());
+        return dir.delete();
+    }
 
-			// Register and Enroll user to Org1MSP
-			UserContext userContext = new UserContext();
-			String name = "user"+System.currentTimeMillis();
-			userContext.setName(name);
-			userContext.setAffiliation(NetworkConstants.ORG1);
-			userContext.setMspId(NetworkConstants.ORG1_MSP);
+    public static void registerEnrollUser() {
+        try {
+            NetworkUtil.cleanUp();
+            String caUrl = NetworkConstants.CA_ORG1_URL;
+            CAClient caClient = new CAClient(caUrl, null);
+            // Enroll Admin to Org1MSP
+            UserContext adminUserContext = new UserContext();
+            adminUserContext.setName(NetworkConstants.ADMIN);
+            adminUserContext.setAffiliation(NetworkConstants.ORG1);
+            adminUserContext.setMspId(NetworkConstants.ORG1_MSP);
+            caClient.setAdminUserContext(adminUserContext);
+            adminUserContext = caClient.enrollAdminUser(NetworkConstants.ADMIN, NetworkConstants.ADMIN_PASSWORD);
 
-			String eSecret = caClient.registerUser(name, NetworkConstants.ORG1);
+            // Register and Enroll user to Org1MSP
+            UserContext userContext = new UserContext();
+            String name = "user" + System.currentTimeMillis();
+            userContext.setName(name);
+            userContext.setAffiliation(NetworkConstants.ORG1);
+            userContext.setMspId(NetworkConstants.ORG1_MSP);
 
-			userContext = caClient.enrollUser(userContext, eSecret);
+            String eSecret = caClient.registerUser(name, NetworkConstants.ORG1);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+            userContext = caClient.enrollUser(userContext, eSecret);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

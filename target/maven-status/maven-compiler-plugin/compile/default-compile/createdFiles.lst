@@ -1,10 +1,12 @@
 com/credblox/service/UserService.class
 com/credblox/service/ChannelService.class
+com/credblox/application/StartNetwork.class
 com/credblox/adapter/client/CAClient.class
 com/credblox/constants/NetworkConstants.class
 com/credblox/application/AddAsset.class
 main/java/com/credblox/util/ProcessUtil.class
 com/credblox/application/InstantiateChaincode.class
+com/credblox/application/StopNetwork.class
 com/credblox/application/TeardownNetwork.class
 com/credblox/service/ChaincodeService.class
 com/credblox/service/AssetService.class
