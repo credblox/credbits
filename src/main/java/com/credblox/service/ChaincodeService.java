@@ -110,10 +110,10 @@ public class ChaincodeService {
         }
     }
 
-    public static String query(String chainCodeName) {
+    public static String invoke(String key, String value) {
         String response = "";
         try {
-            String CHAINCODE_1_PATH = chainCodeName;
+            String chainCodeName = "asset";
             NetworkUtil.cleanUp();
             String caUrl = NetworkConstants.CA_ORG1_URL;
             CAClient caClient = new CAClient(caUrl, null);
@@ -141,7 +141,7 @@ public class ChaincodeService {
             ChaincodeID ccid = ChaincodeID.newBuilder().setName(chainCodeName).build();
             request.setChaincodeID(ccid);
             request.setFcn("set");
-            String[] arguments = {"CAR2", "115"};
+            String[] arguments = {key, value};
             request.setArgs(arguments);
             request.setProposalWaitTime(1000);
 
@@ -163,11 +163,78 @@ public class ChaincodeService {
 			}*/
 
             //Thread.sleep(10000);
-            String[] args1 = {"CAR1"};
+            String[] args1 = {key};
             Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "get", args1);
             for (ProposalResponse pres : responses1Query) {
                 String stringResponse = new String(pres.getChaincodeActionResponsePayload());
                 response = response.concat(stringResponse);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return response;
+    }
+
+    public static String query(String key) {
+        String response = "";
+        try {
+            String chainCodeName = "asset";
+            NetworkUtil.cleanUp();
+            String caUrl = NetworkConstants.CA_ORG1_URL;
+            CAClient caClient = new CAClient(caUrl, null);
+            // Enroll Admin to Org1MSP
+            UserContext adminUserContext = new UserContext();
+            adminUserContext.setName(NetworkConstants.ADMIN);
+            adminUserContext.setAffiliation(NetworkConstants.ORG1);
+            adminUserContext.setMspId(NetworkConstants.ORG1_MSP);
+            caClient.setAdminUserContext(adminUserContext);
+            adminUserContext = caClient.enrollAdminUser(NetworkConstants.ADMIN, NetworkConstants.ADMIN_PASSWORD);
+
+            HyperLedgerFabricClient fabClient = new HyperLedgerFabricClient(adminUserContext);
+
+            ChannelClient channelClient = fabClient.createChannelClient(NetworkConstants.CHANNEL_NAME);
+            Channel channel = channelClient.getChannel();
+            Peer peer = fabClient.getInstance().newPeer(NetworkConstants.ORG1_PEER_0, NetworkConstants.ORG1_PEER_0_URL);
+            EventHub eventHub = fabClient.getInstance().newEventHub("eventhub01", "grpc://localhost:7053");
+            Orderer orderer = fabClient.getInstance().newOrderer(NetworkConstants.ORDERER_NAME, NetworkConstants.ORDERER_URL);
+            channel.addPeer(peer);
+            channel.addEventHub(eventHub);
+            channel.addOrderer(orderer);
+            channel.initialize();
+
+            /*TransactionProposalRequest request = fabClient.getInstance().newTransactionProposalRequest();
+            ChaincodeID ccid = ChaincodeID.newBuilder().setName("asset").build();
+            request.setChaincodeID(ccid);
+            request.setFcn("set");
+            String[] arguments = {"CAR2", "115"};
+            request.setArgs(arguments);
+            request.setProposalWaitTime(1000);
+
+            Map<String, byte[]> tm2 = new HashMap<>();
+            tm2.put("HyperLedgerFabric", "TransactionProposalRequest:JavaSDK".getBytes(UTF_8)); // Just some extra junk
+            // in transient map
+            tm2.put("method", "TransactionProposalRequest".getBytes(UTF_8)); // ditto
+            tm2.put("result", ":)".getBytes(UTF_8)); // This should be returned see chaincode why.
+            tm2.put(EXPECTED_EVENT_NAME, EXPECTED_EVENT_DATA); // This should trigger an event see chaincode why.
+            request.setTransientMap(tm2);
+            Collection<ProposalResponse> responses = channelClient.sendTransactionProposal(request);*/
+
+			/*Thread.sleep(10000);
+
+			Collection<ProposalResponse>  responsesQuery = channelClient.queryByChainCode("fabcar", "queryAllCars", null);
+			for (ProposalResponse pres : responsesQuery) {
+				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
+				System.out.println(stringResponse);
+			}*/
+
+            //Thread.sleep(10000);
+            String[] args1 = {key};
+            Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "get", args1);
+            for (ProposalResponse pres : responses1Query) {
+                String stringResponse = new String(pres.getChaincodeActionResponsePayload());
+                response = response.concat(stringResponse);
+                System.out.println("STRING RESPONSE: "+response);
             }
         } catch (Exception e) {
             e.printStackTrace();
