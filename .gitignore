@@ -2,3 +2,6 @@
 .idea
 .DS_Store
 *iml
+resources/crypto-config/peerOrganizations/org1.example.com/ca/fabric-ca-server.db
+users/org1/admin.ser
+target/*
