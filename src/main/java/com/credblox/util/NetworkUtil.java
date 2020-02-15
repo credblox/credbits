@@ -129,9 +129,6 @@ public class NetworkUtil {
                 }
             }
         }
-
-        // either file or an empty directory
-        Logger.getLogger(NetworkUtil.class.getName()).log(Level.INFO, "Deleting - " + dir.getName());
         return dir.delete();
     }
 }

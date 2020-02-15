@@ -80,8 +80,6 @@ public class ChannelClient {
      */
     public Collection<ProposalResponse> queryByChainCode(String chaincodeName, String functionName, String[] args)
             throws InvalidArgumentException, ProposalException {
-        Logger.getLogger(ChannelClient.class.getName()).log(Level.INFO,
-                "Querying " + functionName + " on channel " + channel.getName());
         QueryByChaincodeRequest request = fabClient.getInstance().newQueryProposalRequest();
         ChaincodeID ccid = ChaincodeID.newBuilder().setName(chaincodeName).build();
         request.setChaincodeID(ccid);
@@ -104,20 +102,12 @@ public class ChannelClient {
      */
     public Collection<ProposalResponse> sendTransactionProposal(TransactionProposalRequest request)
             throws ProposalException, InvalidArgumentException {
-        Logger.getLogger(ChannelClient.class.getName()).log(Level.INFO,
-                "Sending transaction proposal on channel " + channel.getName());
-
         Collection<ProposalResponse> response = channel.sendTransactionProposal(request, channel.getPeers());
         for (ProposalResponse pres : response) {
             String stringResponse = new String(pres.getChaincodeActionResponsePayload());
-            Logger.getLogger(ChannelClient.class.getName()).log(Level.INFO,
-                    "Transaction proposal on channel " + channel.getName() + " " + pres.getMessage() + " "
-                            + pres.getStatus() + " with transaction id:" + pres.getTransactionID());
-            Logger.getLogger(ChannelClient.class.getName()).log(Level.INFO, stringResponse);
         }
 
         CompletableFuture<TransactionEvent> cf = channel.sendTransaction(response);
-        Logger.getLogger(ChannelClient.class.getName()).log(Level.INFO, cf.toString());
 
         return response;
     }

@@ -154,21 +154,19 @@ public class ChaincodeService {
             request.setTransientMap(tm2);
             Collection<ProposalResponse> responses = channelClient.sendTransactionProposal(request);
 
-			/*Thread.sleep(10000);
 
-			Collection<ProposalResponse>  responsesQuery = channelClient.queryByChainCode("fabcar", "queryAllCars", null);
-			for (ProposalResponse pres : responsesQuery) {
+			for (ProposalResponse pres : responses) {
 				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
-				System.out.println(stringResponse);
-			}*/
+                response = response.concat(stringResponse);
+			}
 
             //Thread.sleep(10000);
-            String[] args1 = {key};
+           /* String[] args1 = {key};
             Collection<ProposalResponse> responses1Query = channelClient.queryByChainCode(chainCodeName, "get", args1);
             for (ProposalResponse pres : responses1Query) {
                 String stringResponse = new String(pres.getChaincodeActionResponsePayload());
                 response = response.concat(stringResponse);
-            }
+            }*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -234,7 +232,6 @@ public class ChaincodeService {
             for (ProposalResponse pres : responses1Query) {
                 String stringResponse = new String(pres.getChaincodeActionResponsePayload());
                 response = response.concat(stringResponse);
-                System.out.println("STRING RESPONSE: "+response);
             }
         } catch (Exception e) {
             e.printStackTrace();
