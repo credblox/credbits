@@ -73,6 +73,7 @@ public class Asset extends ChaincodeBase {
         }
 
         String value = stub.getStringState(args.get(0));
+        value = value + stub.getTxId();
         if (value == null || value.isEmpty()) {
             return newErrorResponse("Asset not found with key: " + args.get(0));
         }
