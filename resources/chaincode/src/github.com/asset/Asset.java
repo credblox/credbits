@@ -44,9 +44,6 @@ public class Asset extends ChaincodeBase {
                 case "get":
                     // Return result as success payload
                     return get(stub, params);
-                case "delete":
-                    // Return result as success payload
-                    return delete(stub, params);
                 case "query":
                     // Return result as success payload
                     return query(stub, params);
@@ -73,7 +70,6 @@ public class Asset extends ChaincodeBase {
         }
 
         String value = stub.getStringState(args.get(0));
-        value = value + stub.getTxId();
         if (value == null || value.isEmpty()) {
             return newErrorResponse("Asset not found with key: " + args.get(0));
         }
@@ -121,23 +117,6 @@ public class Asset extends ChaincodeBase {
         }
         stub.putStringState(args.get(0), args.get(1));
         return newSuccessResponse("Succesfully set key : " + args.get(0) + " as value : " + args.get(1), args.get(1).getBytes(StandardCharsets.UTF_8));
-    }
-
-    /**
-     * Delete the key from the state in ledger
-     *
-     * @param stub {@link ChaincodeStub} to operate proposal and ledger
-     * @param args key
-     * @return Response with message and payload
-     */
-    private Response delete(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 1) {
-            return newErrorResponse("Incorrect number of arguments. Expecting a key");
-        }
-        String key = args.get(0);
-        // Delete the key from the state in ledger
-        stub.delState(key);
-        return newSuccessResponse("Succesfully deleted key : " + args.get(0) + "from the ledger", args.get(0).getBytes(StandardCharsets.UTF_8));
     }
 
     public static void main(String[] args) {
