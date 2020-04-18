@@ -6,6 +6,7 @@ import java.util.List;
 import org.hyperledger.fabric.shim.ChaincodeBase;
 import org.hyperledger.fabric.shim.ChaincodeStub;
 import org.hyperledger.fabric.shim.ledger.KeyValue;
+import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 public class Asset extends ChaincodeBase {
 
@@ -47,6 +48,9 @@ public class Asset extends ChaincodeBase {
                 case "query":
                     // Return result as success payload
                     return query(stub, params);
+                case "getByRange":
+                    // Return result as success payload
+                    return getByRange(stub, params);
                 default:
                     break;
             }
@@ -55,6 +59,35 @@ public class Asset extends ChaincodeBase {
         } catch (Throwable e) {
             return ChaincodeBase.newErrorResponse(e.getMessage());
         }
+    }
+
+    /**
+     * get receives the value of a key from the ledger
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @param args key
+     * @return Response with message and payload
+     */
+    private Response getByRange(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 2) {
+            return newErrorResponse("Incorrect arguments. Expecting key ranges: startKey and endKey");
+        }
+
+        String payload = "";
+
+        Iterator<KeyValue> iterator = stub.getStateByRange(args.get(0), args.get(1)).iterator();
+        if (!iterator.hasNext()) {
+            return newSuccessResponse("No results", "[]".getBytes(StandardCharsets.UTF_8));
+        }
+        while (iterator.hasNext()) {
+            payload += iterator.next().getStringValue() + ",";
+        }
+        payload = payload.substring(0, payload.length() - 1);
+        payload = "[" + payload + "]";
+
+        Response response = newSuccessResponse("Query succesful", payload.getBytes(StandardCharsets.UTF_8));
+
+        return response;
     }
 
     /**
