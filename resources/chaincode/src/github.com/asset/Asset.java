@@ -6,6 +6,7 @@ import java.util.List;
 import org.hyperledger.fabric.shim.ChaincodeBase;
 import org.hyperledger.fabric.shim.ChaincodeStub;
 import org.hyperledger.fabric.shim.ledger.KeyValue;
+import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 public class Asset extends ChaincodeBase {
 
@@ -44,12 +45,12 @@ public class Asset extends ChaincodeBase {
                 case "get":
                     // Return result as success payload
                     return get(stub, params);
-                case "delete":
-                    // Return result as success payload
-                    return delete(stub, params);
                 case "query":
                     // Return result as success payload
                     return query(stub, params);
+                case "getByRange":
+                    // Return result as success payload
+                    return getByRange(stub, params);
                 default:
                     break;
             }
@@ -67,13 +68,41 @@ public class Asset extends ChaincodeBase {
      * @param args key
      * @return Response with message and payload
      */
+    private Response getByRange(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 2) {
+            return newErrorResponse("Incorrect arguments. Expecting key ranges: startKey and endKey");
+        }
+
+        String payload = "";
+
+        Iterator<KeyValue> iterator = stub.getStateByRange(args.get(0), args.get(1)).iterator();
+        if (!iterator.hasNext()) {
+            return newSuccessResponse("No results", "[]".getBytes(StandardCharsets.UTF_8));
+        }
+        while (iterator.hasNext()) {
+            payload += iterator.next().getStringValue() + ",";
+        }
+        payload = payload.substring(0, payload.length() - 1);
+        payload = "[" + payload + "]";
+
+        Response response = newSuccessResponse("Query succesful", payload.getBytes(StandardCharsets.UTF_8));
+
+        return response;
+    }
+
+    /**
+     * get receives the value of a key from the ledger
+     *
+     * @param stub {@link ChaincodeStub} to operate proposal and ledger
+     * @param args key
+     * @return Response with message and payload
+     */
     private Response get(ChaincodeStub stub, List<String> args) {
         if (args.size() != 1) {
             return newErrorResponse("Incorrect arguments. Expecting a key");
         }
 
         String value = stub.getStringState(args.get(0));
-        value = value + stub.getTxId();
         if (value == null || value.isEmpty()) {
             return newErrorResponse("Asset not found with key: " + args.get(0));
         }
@@ -121,23 +150,6 @@ public class Asset extends ChaincodeBase {
         }
         stub.putStringState(args.get(0), args.get(1));
         return newSuccessResponse("Succesfully set key : " + args.get(0) + " as value : " + args.get(1), args.get(1).getBytes(StandardCharsets.UTF_8));
-    }
-
-    /**
-     * Delete the key from the state in ledger
-     *
-     * @param stub {@link ChaincodeStub} to operate proposal and ledger
-     * @param args key
-     * @return Response with message and payload
-     */
-    private Response delete(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 1) {
-            return newErrorResponse("Incorrect number of arguments. Expecting a key");
-        }
-        String key = args.get(0);
-        // Delete the key from the state in ledger
-        stub.delState(key);
-        return newSuccessResponse("Succesfully deleted key : " + args.get(0) + "from the ledger", args.get(0).getBytes(StandardCharsets.UTF_8));
     }
 
     public static void main(String[] args) {
