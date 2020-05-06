@@ -23,6 +23,7 @@ public class ChaincodeService {
     private static final String EXPECTED_EVENT_NAME = "event";
 
     public static void instantiate(String chainCodeName) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.OFF);
         try {
             String CHAINCODE_1_PATH = chainCodeName;
             CryptoSuite cryptoSuite = CryptoSuite.Factory.getCryptoSuite();
@@ -111,6 +112,7 @@ public class ChaincodeService {
     }
 
     public static String invoke(String key, String value) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.OFF);
         String response = "";
         try {
             String chainCodeName = "asset";
@@ -175,6 +177,7 @@ public class ChaincodeService {
     }
 
     public static String query(String key) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.OFF);
         String response = "";
         try {
             String chainCodeName = "asset";
@@ -241,6 +244,7 @@ public class ChaincodeService {
     }
 
     public static String queryByRange(String startKey, String endKey) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.OFF);
         String response = "";
         try {
             String chainCodeName = "asset";

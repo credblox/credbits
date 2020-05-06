@@ -58,6 +58,7 @@ services:
       - ../resources/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
       - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
       - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/msp/peerOrg2
+      - ../orderer:/var/hyperledger/production/orderer
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
@@ -86,6 +87,7 @@ services:
       - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
       - ../resources/crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
       - ../resources/config:/etc/hyperledger/configtx
+      - ../peer0.org1:/var/hyperledger/production
     depends_on:
       - orderer.example.com
 
@@ -113,6 +115,7 @@ services:
       - ../resources/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp:/etc/hyperledger/fabric/msp
       - ../resources/crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
       - ../resources/config:/etc/hyperledger/configtx
+      - ../peer1.org1:/var/hyperledger/production
     depends_on:
       - orderer.example.com
 
@@ -140,6 +143,7 @@ services:
       - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
       - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
       - ../resources/config:/etc/hyperledger/configtx
+      - ../peer0.org2:/var/hyperledger/production
     depends_on:
       - orderer.example.com
 
@@ -167,5 +171,6 @@ services:
       - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp:/etc/hyperledger/fabric/msp
       - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
       - ../resources/config:/etc/hyperledger/configtx
+      - ../peer1.org2:/var/hyperledger/production
     depends_on:
       - orderer.example.com
