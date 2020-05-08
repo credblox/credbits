@@ -1,0 +1,86 @@
+version: '2'
+
+networks:
+  custom:
+
+services:
+
+  ca.org2.example.com:
+    image: hyperledger/fabric-ca:1.4.1
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org2
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server/ca.org2.example.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server/384b0c0e6faf5d2c256f1265a89aecde606e7577869e07f3e1b17ad318607413_sk
+    ports:
+      - "8054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/ca/:/etc/hyperledger/fabric-ca-server
+    container_name: ca_peerOrg2
+    networks:
+      - custom
+
+  peer0.org2.example.com:
+    container_name: peer0.org2.example.com
+    image: hyperledger/fabric-peer:1.4.1
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer0.org2.example.com
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_ADDRESS=peer0.org2.example.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_custom
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    networks:
+      - custom
+    ports:
+      - 8051:7051
+      - 8053:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
+      - ../resources/config:/etc/hyperledger/configtx
+      - ../peer0.org2:/var/hyperledger/production
+    depends_on:
+      - orderer.example.com
+    extra_hosts:
+      - orderer.example.com:52.32.140.24
+      - peer0.org1.example.com:52.32.140.24
+      - peer1.org1.example.com:52.32.140.24
+
+  peer1.org2.example.com:
+    container_name: peer1.org2.example.com
+    image: hyperledger/fabric-peer:1.4.1
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.org2.example.com
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_ADDRESS=peer1.org2.example.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_custom
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    networks:
+      - custom
+    ports:
+      - 8056:7051
+      - 8058:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../resources/crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
+      - ../resources/config:/etc/hyperledger/configtx
+      - ../peer1.org2:/var/hyperledger/production
+    depends_on:
+      - orderer.example.com
+    extra_hosts:
+      - orderer.example.com:52.32.140.24
+      - peer0.org1.example.com:52.32.140.24
+      - peer1.org1.example.com:52.32.140.24
